@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FaceSearch AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Link to our beautiful new stylesheet -->
+    <link rel="stylesheet" href="/admin_static/admin.css">
+</head>
+<body class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 p-4 flex flex-col fixed h-full">
+        <h1 class="text-2xl font-bold text-blue-600 mb-8"><i class="fa-solid fa-brain mr-2"></i>FaceSearch AI</h1>
+        <nav class="flex flex-col space-y-2">
+            <a href="#" id="nav-collections" class="nav-link active"><i class="fa-solid fa-database fa-fw mr-3"></i>Collections</a>
+            <a href="#" id="nav-guests" class="nav-link"><i class="fa-solid fa-users fa-fw mr-3"></i>Guest Accounts</a>
+            <a href="#" id="nav-activities" class="nav-link"><i class="fa-solid fa-clipboard-list fa-fw mr-3"></i>Activity Log</a>
+            <a href="#" id="nav-admins" class="nav-link"><i class="fa-solid fa-user-shield fa-fw mr-3"></i>Admin Users</a>
+        </nav>
+        <div class="mt-auto">
+            <button id="logout-btn" class="w-full nav-link"><i class="fa-solid fa-right-from-bracket fa-fw mr-3"></i>Logout</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8 flex-1">
+        <!-- Collections View -->
+        <div id="view-collections" class="view">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">Collection Management</h2>
+                <div>
+                    <button id="delete-selected-collections" class="btn btn-danger hidden mr-4"><i class="fa-solid fa-trash-can mr-2"></i>Delete Selected</button>
+                    <button id="open-create-modal-btn" class="btn btn-primary"><i class="fa-solid fa-plus mr-2"></i>New Collection</button>
+                </div>
+            </div>
+            <div class="glass-card">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" class="check-all" data-table="collections"></th>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Upload Date</th>
+                            <th>Total Images</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="collections-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Guests View -->
+        <div id="view-guests" class="view hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">Guest Accounts</h2>
+                <button id="delete-selected-guests" class="btn btn-danger hidden"><i class="fa-solid fa-trash-can mr-2"></i>Delete Selected</button>
+            </div>
+            <div class="glass-card">
+                <table class="w-full text-left">
+                    <thead><tr><th><input type="checkbox" class="check-all" data-table="guests"></th><th>ID</th><th>Name</th><th>Mobile Number</th><th>Registered On</th></tr></thead>
+                    <tbody id="guests-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Activities View -->
+        <div id="view-activities" class="view hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">Guest Activity Log</h2>
+                <button id="delete-selected-activities" class="btn btn-danger hidden"><i class="fa-solid fa-trash-can mr-2"></i>Delete Selected</button>
+            </div>
+            <div class="glass-card">
+                <table class="w-full text-left">
+                    <thead><tr><th><input type="checkbox" class="check-all" data-table="activities"></th><th>Timestamp</th><th>Guest</th><th>Action</th><th>Details</th></tr></thead>
+                    <tbody id="activities-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Admins View -->
+        <div id="view-admins" class="view hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">Admin User Management</h2>
+                <div>
+                    <button id="delete-selected-admins" class="btn btn-danger hidden mr-4"><i class="fa-solid fa-trash-can mr-2"></i>Delete Selected</button>
+                    <button id="open-admin-modal-btn" class="btn btn-primary"><i class="fa-solid fa-user-plus mr-2"></i>New Admin</button>
+                </div>
+            </div>
+            <div class="glass-card">
+                <table class="w-full text-left">
+                    <thead><tr><th><input type="checkbox" class="check-all" data-table="admins"></th><th>ID</th><th>Username</th><th class="text-center">Actions</th></tr></thead>
+                    <tbody id="admins-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="create-collection-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 class="text-xl font-bold mb-4">Create & Index New Collection</h3>
+            <div class="space-y-4">
+                <div><label for="update-collection-name" class="block text-sm font-medium text-slate-600 mb-1">1. Collection Name</label><input type="text" id="update-collection-name" placeholder="e.g., event_name_2025_07_15" class="modal-input"></div>
+                <div><label for="collection-source-dropdown" class="block text-sm font-medium text-slate-600 mb-1">2. Select Source Folder</label><select id="collection-source-dropdown" class="modal-input"></select></div>
+                <div><label class="block text-sm font-medium text-slate-600 mb-1">3. Set the Location</label><div id="map" class="h-64 w-full z-10"></div></div>
+                <div class="text-center bg-slate-100 p-3 rounded-lg"><p class="text-xs text-slate-500">Detected Location</p><p id="reverse-geocoded-address" class="text-slate-700 font-medium min-h-[20px]">Getting address...</p></div>
+                <button id="get-location-btn" class="w-full text-sm text-blue-600 hover:text-blue-500 transition-colors"><i class="fa-solid fa-location-crosshairs mr-2"></i>Center Map on My Current Location</button>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button class="modal-btn-secondary cancel-btn">Cancel</button>
+                <button id="update-modal-start-btn" class="modal-btn-primary">Start Indexing</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="create-admin-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 class="text-xl font-bold mb-4">Create New Admin User</h3>
+            <div class="space-y-4">
+                <input type="text" id="new-admin-username" placeholder="New Username" class="modal-input">
+                <input type="password" id="new-admin-password" placeholder="New Password" class="modal-input">
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button class="modal-btn-secondary cancel-btn">Cancel</button>
+                <button id="admin-modal-create-btn" class="modal-btn-primary">Create User</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/admin_static/admin.js"></script>
+</body>
+</html>

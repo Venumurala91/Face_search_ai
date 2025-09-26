@@ -1,0 +1,214 @@
+/* frontend/static/login.css */
+
+/* Base Setup & New Dynamic Background */
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  color: #3d3d4a; 
+  background-color: #fcfdf8; 
+  overflow: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #fde4f2, #e6e9ff, #d8f6ff);
+  background-size: 400% 400%;
+  animation: softGradient 20s ease infinite;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+@keyframes softGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Login Container */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+}
+
+/* Enhanced Login Box */
+.login-box {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  padding: 3rem 2.5rem;
+  border-radius: 2rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(44, 62, 80, 0.15);
+  animation: floatUp 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 35px 60px -15px rgba(44, 62, 80, 0.2);
+}
+
+@keyframes floatUp {
+  from { transform: translateY(60px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Login Header */
+.login-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.logo-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #3498db, #2980b9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: iconPulse 3s infinite ease-in-out, floatIcon 6s infinite ease-in-out;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-8px) scale(1.05); }
+}
+
+.login-header h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  letter-spacing: -1px;
+}
+
+.login-header p {
+  color: #7f8c8d;
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+/* Input Fields with Icons */
+.input-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+/* CORRECTED ICON ALIGNMENT */
+.input-group .input-icon {
+  position: absolute;
+  left: 1.5rem;
+  top: 68%; /* Corrected value for vertical alignment */
+  transform: translateY(-50%);
+  color: #bdc3c7;
+  transition: color 0.3s ease;
+  pointer-events: none; /* Prevents icon from blocking clicks */
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555555;
+  font-size: 0.95rem;
+}
+
+.input-group input {
+  width: 100%;
+  background: #f7f9fc;
+  border: 1px solid #dde4ed;
+  color: #333333;
+  padding: 1rem 1.5rem 1rem 3.5rem; 
+  border-radius: 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: #a0aec0;
+}
+
+.input-group input:focus {
+  border-color: #3498db;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+  outline: none;
+}
+
+.input-group input:focus + .input-icon {
+  color: #3498db;
+}
+
+/* Attractive Login Button */
+.login-button {
+  width: 100%;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  padding: 1.2rem;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 1rem;
+  color: white;
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: all 0.4s ease;
+  box-shadow: 0 10px 25px -5px rgba(52, 152, 219, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px -5px rgba(41, 128, 185, 0.4);
+}
+
+.login-button i {
+  transition: transform 0.3s ease;
+}
+
+.login-button:hover i {
+  transform: translateX(5px);
+}
+
+/* Error Message */
+.error-message {
+  color: #c0392b;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+  text-align: center;
+  padding: 1rem;
+  border-radius: 1rem;
+  margin-top: 1.5rem;
+  font-weight: 500;
+}
+
+.error-message.hidden {
+  display: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .login-box {
+    padding: 2.5rem 1.5rem;
+  }
+  .login-header h1 {
+    font-size: 1.9rem;
+  }
+}

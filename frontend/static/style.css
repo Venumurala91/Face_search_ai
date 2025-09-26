@@ -1,0 +1,582 @@
+/* --- ENHANCED LIGHT "GLASS" THEME WITH INTEGRATED GRID & GALLERY --- */
+
+/* Base Setup with Dynamic Background (Preserved) */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    color: #3d3d4a;
+    background-color: #fcfdf8;
+    overflow: hidden;
+    position: relative;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #fde4f2, #e6e9ff, #d8f6ff);
+    background-size: 400% 400%;
+    animation: softGradient 20s ease infinite;
+    z-index: -1;
+    opacity: 0.6;
+}
+
+@keyframes softGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Screen Animation (From Dark Theme) */
+.screen { 
+    animation: fadeIn 0.5s ease-in-out; 
+    height: calc(100vh - 76px); 
+    display: flex; 
+    flex-direction: column; 
+}
+
+#screen-upload { 
+    justify-content: center; 
+}
+
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+
+/* Enhanced Header & Controls (Glass Theme) */
+.enhanced-header {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    box-shadow: 0 4px 16px -4px rgba(44, 62, 80, 0.1);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.enhanced-header h1 {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* Collection Dropdown (Glass Theme) */
+#collection-dropdown {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 0.8rem 2.5rem 0.8rem 1rem;
+    color: #475569;
+    font-weight: 600;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%236b7280'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M8.25 15L12 18.75 15.75 15' /%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.2em;
+}
+
+#collection-dropdown:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    outline: none;
+}
+
+/* Glass Card Effects */
+.glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(44, 62, 80, 0.15);
+    transition: all 0.3s ease;
+    animation: floatUp 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.glass-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 35px 60px -15px rgba(44, 62, 80, 0.2); 
+}
+
+@keyframes floatUp { 
+    from { transform: translateY(40px); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
+
+/* Button Styles (Glass Theme Colors) */
+
+/* Primary Button - For main actions like "New Search", "Collections" */
+.primary-button {
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 1rem;
+    color: white;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 25px -5px rgba(52, 152, 219, 0.3);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.primary-button:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 15px 30px -5px rgba(41, 128, 185, 0.4); 
+}
+
+/* Secondary Button - For logout actions */
+.secondary-button {
+    background: #e74c3c;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 0.75rem;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+}
+
+.secondary-button:hover { 
+    background: #c0392b; 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); 
+}
+
+/* Success Button - For capture actions */
+.success-button {
+    background: linear-gradient(90deg, #27ae60, #219a52);
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 1rem;
+    color: white;
+    font-weight: 600;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 25px -5px rgba(39, 174, 96, 0.3);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-button:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 15px 30px -5px rgba(33, 150, 83, 0.4); 
+}
+
+/* Header Button (Glass Theme Integration) */
+.header-btn { 
+    display: flex; 
+    align-items: center; 
+    font-weight: 600; 
+    padding: 0.5rem 1rem; 
+    border-radius: 0.75rem; 
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.25px;
+}
+
+/* Specific button color applications */
+.logout-btn {
+    background: #e74c3c;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(231, 76, 60, 0.2);
+}
+
+.logout-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px -3px rgba(231, 76, 60, 0.3);
+}
+
+.capture-btn {
+    background: linear-gradient(90deg, #27ae60, #219a52);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(39, 174, 96, 0.2);
+}
+
+.capture-btn:hover {
+    background: linear-gradient(90deg, #219a52, #1e8449);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px -3px rgba(39, 174, 96, 0.3);
+}
+
+.collections-btn, .new-search-btn {
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(52, 152, 219, 0.2);
+}
+
+.collections-btn:hover, .new-search-btn:hover {
+    background: linear-gradient(90deg, #2980b9, #21618c);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px -3px rgba(52, 152, 219, 0.3);
+}
+
+/* Additional Glass Theme Elements */
+.camera-container { 
+    background: rgba(0,0,0,0.8); 
+    border-radius: 1.5rem; 
+    overflow: hidden; 
+    position: relative; 
+    border: 2px solid rgba(255,255,255,0.1); 
+}
+
+.loading-icon { 
+    background: linear-gradient(45deg, #3498db, #2980b9); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    animation: iconPulse 2s infinite ease-in-out, spin 3s linear infinite; 
+}
+
+@keyframes iconPulse { 
+    0%, 100% { transform: scale(1) rotate(0deg); } 
+    50% { transform: scale(1.1) rotate(180deg); } 
+}
+
+@keyframes spin { 
+    from { transform: rotate(0deg); } 
+    to { transform: rotate(360deg); } 
+}
+
+/* Upload Area (Dark Theme Integration) */
+#upload-area.drag-over { 
+    border-color: #22d3ee; 
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); 
+}
+
+/* Results Screen Layout */
+#screen-results {
+    padding: 1rem;
+    height: calc(100vh - 100px);
+    box-sizing: border-box;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(15px);
+    border-radius: 1rem;
+    box-shadow: 0 4px 16px -4px rgba(44, 62, 80, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.results-summary {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.results-grid-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1rem;
+    height: calc(100% - 60px);
+    max-height: 75vh;
+}
+
+/* Integrated Thumbnail Sidebar */
+.thumbnail-sidebar {
+    height: 100%;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(44, 62, 80, 0.1);
+    scroll-behavior: smooth;
+}
+
+/* Grid Layout (From Dark Theme) */
+.thumbnail-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); 
+    gap: 0.75rem; 
+    padding: 0.25rem; 
+}
+
+/* Thumbnail Images (Dark Theme Style) */
+.thumbnail-image { 
+    position: relative; 
+    width: 100%; 
+    aspect-ratio: 1 / 1; 
+    object-fit: cover; 
+    border-radius: 0.5rem; 
+    cursor: pointer; 
+    border: 3px solid transparent; 
+    transition: all 0.2s ease; 
+}
+
+.thumbnail-image:hover { 
+    transform: scale(1.05); 
+    border-color: rgba(34, 211, 238, 0.5); 
+}
+
+.thumbnail-image.active-thumbnail { 
+    border-color: #22d3ee; 
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); 
+    transform: scale(1.05); 
+}
+
+.thumbnail-image.selected-thumbnail { 
+    border-color: #3b82f6; 
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); 
+}
+
+.thumbnail-image.selected-thumbnail::after { 
+    content: '\f00c'; 
+    font-family: 'Font Awesome 6 Free'; 
+    font-weight: 900; 
+    position: absolute; 
+    top: 5px; 
+    right: 5px; 
+    color: white; 
+    background-color: #3b82f6; 
+    border-radius: 9999px; 
+    width: 20px; 
+    height: 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 12px; 
+    border: 2px solid white; 
+}
+
+/* Gallery Main Display */
+.gallery-main {
+    height: 100%;
+    display: flex;
+}
+
+.gallery-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-height: 65vh;
+    background-color: #000000;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 15px 30px -8px rgba(44, 62, 80, 0.2);
+}
+
+.main-image-display {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+/* Main Image Display (From Dark Theme) */
+.main-image-display img { 
+    max-width: 100%; 
+    max-height: 75vh; 
+    object-fit: contain; 
+    transition: opacity 0.3s ease-in-out; 
+}
+
+.main-image-display img.fade-out { 
+    opacity: 0; 
+}
+
+/* Gallery Navigation Buttons (From Dark Theme) */
+.gallery-nav-btn { 
+    position: absolute; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    background-color: rgba(17, 24, 39, 0.5); 
+    color: white; 
+    border-radius: 9999px; 
+    width: 44px; 
+    height: 44px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.25rem; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    backdrop-filter: blur(4px); 
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+}
+
+.gallery-nav-btn:hover { 
+    background-color: rgba(34, 211, 238, 0.8); 
+    transform: translateY(-50%) scale(1.1); 
+}
+
+.gallery-nav-btn:disabled { 
+    opacity: 0.2; 
+    cursor: not-allowed; 
+    transform: translateY(-50%) scale(1); 
+}
+
+.gallery-nav-btn.left-4 { left: 0.75rem; }
+.gallery-nav-btn.right-4 { right: 0.75rem; }
+
+/* Scrollbar Styling (From Dark Theme) */
+.thumbnail-sidebar::-webkit-scrollbar { 
+    width: 8px; 
+}
+
+.thumbnail-sidebar::-webkit-scrollbar-track { 
+    background: #1f2937; 
+    border-radius: 10px; 
+}
+
+.thumbnail-sidebar::-webkit-scrollbar-thumb { 
+    background: #0891b2; 
+    border-radius: 10px; 
+}
+
+/* Toast Notifications (Glass Theme Style) */
+.toast { 
+    background: rgba(255,255,255,0.95); 
+    backdrop-filter: blur(20px); 
+    color: #2c3e50; 
+    padding: 1rem 1.5rem; 
+    border-radius: 1rem; 
+    border-left: 4px solid #3498db; 
+    box-shadow: 0 15px 35px -5px rgba(44,62,80,0.2); 
+    opacity: 0; 
+    transform: translateX(100%); 
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+    display: flex; 
+    align-items: center; 
+    font-weight: 500;
+}
+
+.toast.show { 
+    opacity: 1; 
+    transform: translateX(0); 
+}
+
+.toast.success { 
+    border-color: #27ae60; 
+}
+
+.toast.error { 
+    border-color: #e74c3c; 
+}
+
+.toast.info { 
+    border-color: #3498db; 
+}
+
+/* Additional Glass Theme Elements */
+.payment-card { 
+    background: rgba(255,255,255,0.95); 
+    backdrop-filter: blur(20px); 
+    border: 1px solid rgba(255,255,255,0.9); 
+    border-radius: 2rem; 
+    padding: 3rem 2rem; 
+    box-shadow: 0 25px 50px -12px rgba(44,62,80,0.15); 
+    text-align: center; 
+}
+
+.payment-status-checker { 
+    background: rgba(52,152,219,0.1); 
+    border: 1px solid rgba(52,152,219,0.2); 
+    border-radius: 1rem; 
+    padding: 1rem; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    color: #2c3e50; 
+    font-weight: 500; 
+}
+
+/* Responsive Design */
+@media (max-width: 1366px) {
+    .results-grid-container {
+        grid-template-columns: 250px 1fr;
+        max-height: 70vh;
+    }
+    
+    .gallery-container {
+        max-height: 60vh;
+    }
+    
+    .thumbnail-sidebar {
+        max-height: 60vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .results-grid-container { 
+        grid-template-columns: 1fr; 
+        height: auto; 
+        max-height: none;
+    }
+    .thumbnail-sidebar { 
+        height: 200px;
+        max-height: 200px;
+    }
+    .gallery-container {
+        max-height: 50vh;
+    }
+}
+
+
+
+
+/* ... (Keep all your existing CSS) ... */
+
+/* ========================================================== */
+/* NEW: Style for the action buttons inside the gallery (Print) */
+/* ========================================================== */
+.gallery-action-btn {
+    position: absolute;
+    top: 0.75rem; /* 12px */
+    right: 0.75rem; /* 12px */
+    background-color: rgba(17, 24, 39, 0.5); 
+    color: white; 
+    border-radius: 9999px; 
+    width: 44px; 
+    height: 44px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.1rem; /* Slightly smaller than nav arrows */
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    backdrop-filter: blur(4px); 
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+    z-index: 10;
+}
+
+.gallery-action-btn:hover { 
+    background-color: rgba(59, 130, 246, 0.8); /* Use a blue hover color */
+    transform: scale(1.1); 
+}

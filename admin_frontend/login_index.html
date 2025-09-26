@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - FaceSearch AI</title>
+    <!-- We no longer need TailwindCSS, but we need these for fonts and icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Global Styles & Animated Background --- */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: #334155;
+            background-color: #f8fafc;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(45deg, #e0e7ff, #c7d2fe, #a5b4fc);
+            background-size: 400% 400%;
+            animation: softGradient 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes softGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Login Box --- */
+        .login-box {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            padding: 3rem 2.5rem;
+            border-radius: 1.5rem;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(44, 62, 80, 0.15);
+            animation: floatUp 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-sizing: border-box; /* Ensures padding is included in width */
+        }
+
+        @keyframes floatUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- Login Header --- */
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #4f46e5, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-header h1 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .login-header p {
+            color: #64748b;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        /* --- Form Elements --- */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+        .input-group input {
+            width: 100%;
+            box-sizing: border-box;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+            padding: 0.8rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .input-group input:focus {
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .login-button {
+            width: 100%;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            padding: 1rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.3);
+        }
+        .login-button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .error-message {
+            color: #b91c1c;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            text-align: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-top: 1.5rem;
+            font-weight: 500;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="login-header">
+            <i class="logo-icon fa-solid fa-shield-halved"></i>
+            <h1>Admin Portal</h1>
+            <p>Sign in to manage the system</p>
+        </div>
+        <form id="admin-login-form">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <div>
+                <button type="submit" class="login-button">
+                    <span>Sign In</span>
+                </button>
+            </div>
+        </form>
+         <div id="error-message" class="error-message hidden"></div>
+    </div>
+    
+    <script>
+        document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitButton = form.querySelector('.login-button');
+            const errorMessageDiv = document.getElementById('error-message');
+
+            // Hide previous errors and show loading state
+            errorMessageDiv.classList.add('hidden');
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>
+                <span>Signing In...</span>
+            `;
+
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/admin/login', { method: 'POST', body: formData });
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    const errorData = await response.json();
+                    errorMessageDiv.textContent = errorData.detail;
+                    errorMessageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                 errorMessageDiv.textContent = 'Could not connect to the server. Please try again.';
+                 errorMessageDiv.classList.remove('hidden');
+            } finally {
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<span>Sign In</span>';
+            }
+        });
+    </script>
+</body>
+</html>

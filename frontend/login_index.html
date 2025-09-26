@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Your Park Memories!</title>
+    
+    <!-- External Libraries & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Your Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/login.css">
+</head>
+<body>
+    
+    <!-- The login container holds the main form box -->
+    <div class="login-container">
+        <div class="login-box">
+            
+            <!-- Header Section with Icon and Text -->
+            <div class="login-header">
+                <i class="logo-icon fa-solid fa-wand-magic-sparkles"></i>
+                <h1>Find Your Memories</h1>
+                <p>Enter your details to see all your photos from today's visit!</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="guest-login-form">
+                
+                <!-- Input Group for Full Name -->
+                <div class="input-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" placeholder="e.g., Jane Doe" required>
+                    <!-- Icon for the input field -->
+                    <i class="input-icon fa-solid fa-user"></i>
+                </div>
+                
+                <!-- Input Group for Mobile Number -->
+                <div class="input-group">
+                    <label for="mobile_number">Mobile Number</label>
+                    <input type="tel" id="mobile_number" name="mobile_number" placeholder="e.g., 555-123-4567" required>
+                    <!-- Icon for the input field -->
+                    <i class="input-icon fa-solid fa-mobile-screen-button"></i>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="login-button">
+                    Find My Photos! <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+            
+            <!-- Error Message Placeholder (hidden by default) -->
+            <div id="error-message" class="error-message hidden"></div>
+            
+        </div>
+    </div>
+    
+    <!-- Your Custom JavaScript -->
+    <script src="/static/login.js"></script>
+    
+</body>
+</html>

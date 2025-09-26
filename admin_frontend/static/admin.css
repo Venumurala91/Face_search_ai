@@ -1,0 +1,236 @@
+/* --- Global Styles & Animated Background --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: #334155; /* Dark Slate for text */
+    background-color: #f8fafc; /* Fallback background */
+    overflow-x: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(45deg, #fde4f2, #e6e9ff, #d8f6ff);
+    background-size: 400% 400%;
+    animation: softGradient 20s ease infinite;
+    z-index: -1;
+    opacity: 0.8;
+}
+
+@keyframes softGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* --- Layout: Sidebar & Main Content --- */
+aside {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+main h2 {
+    color: #1e293b;
+    letter-spacing: -0.025em;
+}
+
+/* --- Glassmorphism Card Style --- */
+.glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 1.5rem; /* More rounded */
+    box-shadow: 0 25px 50px -12px rgba(44, 62, 80, 0.1);
+    overflow: hidden; /* Important for tables inside */
+}
+
+/* --- Navigation Links --- */
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+.nav-link:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+    transform: translateX(4px);
+}
+.nav-link.active {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+    transform: translateX(4px) scale(1.02);
+}
+#logout-btn.nav-link:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+}
+
+/* --- Modern Button Styles --- */
+.btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+}
+.btn-primary {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    color: white;
+}
+.btn-primary:hover {
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+}
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* --- Table Styles --- */
+th {
+    background-color: #f8fafc; /* Very light grey */
+    padding: 1rem 1.25rem;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #64748b; /* Lighter slate */
+    border-bottom: 2px solid #e2e8f0;
+}
+td {
+    padding: 1rem 1.25rem; /* Slightly reduced padding */
+    border-top: 1px solid #e2e8f0;
+    vertical-align: middle;
+    color: #334155;
+}
+tbody tr:hover {
+    background-color: #f1f5f9;
+}
+tbody tr {
+    transition: background-color 0.15s ease-in-out;
+}
+td .font-medium { font-weight: 600; }
+td .text-white { color: #1e293b; } /* Override old dark theme color */
+
+/* NEW/IMPROVED: Style for long, wrapping location text */
+.location-cell {
+    max-width: 350px;
+    white-space: normal; /* Allow text to wrap */
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+/* Icon-only action buttons in tables */
+.action-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 0.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+.action-btn:hover {
+    background-color: #e2e8f0;
+    color: #1e293b;
+    transform: scale(1.1);
+}
+.action-btn.delete:hover {
+    background-color: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+/* --- Modal Styles (Unchanged) --- */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background-color: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+.modal-box {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 1.5rem;
+    width: 100%;
+    max-width: 550px;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+}
+.modal-box h3 {
+    color: #1e293b;
+}
+.modal-input {
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+    padding: 0.8rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.modal-input::placeholder { color: #94a3b8; }
+.modal-input:focus {
+    border-color: #3b82f6;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Modal Buttons */
+.modal-btn-primary { background: #2563eb; color: white; }
+.modal-btn-secondary { background: #e2e8f0; color: #475569; }
+.modal-btn-primary, .modal-btn-secondary {
+    font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 0.5rem; transition: background-color 0.2s;
+}
+.modal-btn-primary:hover { background-color: #1d4ed8; }
+.modal-btn-secondary:hover { background-color: #cbd5e1; }
+
+
+/* --- Checkbox & Map Styles (Unchanged) --- */
+th .check-all, td .check-item {
+    width: 1.1rem; height: 1.1rem;
+    cursor: pointer;
+    accent-color: #2563eb;
+    background-color: #e2e8f0;
+    border-radius: 0.25rem;
+    border: 1px solid #cbd5e1;
+}
+#map {
+    background-color: #e2e8f0; /* A light background for while tiles load */
+    border-radius: 0.75rem;
+    border: 1px solid #cbd5e1;
+}

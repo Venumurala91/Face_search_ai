@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Your Park Memories</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="enhanced-header">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <h1 class="flex items-center">
+                <i class="fa-solid fa-wand-magic-sparkles mr-3"></i>Your Park Memories
+            </h1>
+            <div class="flex items-center gap-4">
+                <select id="collection-dropdown" class="glass-dropdown">
+                    <!-- Options populated by JS -->
+                </select>
+                <button id="guest-logout-btn" class="secondary-button">
+                    <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 flex-grow flex flex-col">
+        <!-- Screen 1: Upload (Camera) -->
+        <div id="screen-upload" class="screen flex-grow flex flex-col items-center justify-center py-10">
+            <div class="w-full max-w-lg glass-card p-8 flex flex-col items-center">
+                <h2 class="text-2xl font-semibold mb-6 text-center text-gray-700">Take a Selfie to Find Your Photos</h2>
+                
+                <div id="camera-container" class="camera-container w-full aspect-video mb-6 flex items-center justify-center">
+                    <video id="webcam" class="hidden w-full h-full object-cover"></video>
+                    <i id="camera-placeholder" class="fa-solid fa-video-slash text-5xl text-gray-400"></i>
+                </div>
+                
+                <div class="flex justify-center space-x-4 w-full mb-6">
+                    <button id="start-camera-btn" class="primary-button flex-1">
+                        <i class="fa-solid fa-video mr-2"></i>Start Camera
+                    </button>
+                    <button id="capture-btn" class="success-button flex-1 disabled:opacity-50" disabled>
+                        <i class="fa-solid fa-camera mr-2"></i>Capture
+                    </button>
+                </div>
+
+                <div id="upload-preview-section" class="hidden w-full text-center">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-700">Using this photo:</h3>
+                    <div id="preview-container" class="mb-6 inline-block"></div>
+                    <button id="search-btn" class="w-full primary-button text-xl py-4">
+                        <i class="fa-solid fa-magnifying-glass mr-3"></i>Find My Memories
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Loading -->
+        <div id="screen-loading" class="screen hidden flex-grow flex flex-col items-center justify-center">
+            <i class="fa-solid fa-brain loading-icon text-7xl mb-6"></i>
+            <div class="glass-card p-8 text-center">
+                <h2 class="text-3xl font-bold mb-2 text-gray-700">Finding Your Memories...</h2>
+                <p class="text-gray-600">Please wait while we search through all photos</p>
+            </div>
+        </div>
+        
+        <!-- Screen 3: Results -->
+        <div id="screen-results" class="screen hidden flex-grow flex flex-col">
+            <!-- Results will be populated by JS -->
+        </div>
+
+        <!-- Screen 4: Payment -->
+        <div id="screen-payment" class="screen hidden flex-grow flex flex-col items-center justify-center">
+            <div class="payment-card w-full max-w-lg">
+                <h2 class="text-3xl font-bold text-gray-700 mb-4">Complete Your Purchase</h2>
+                <p class="text-gray-600 mb-6">Scan the QR code with any UPI app or use the UPI ID below.</p>
+                <img id="qr-code-img" src="/static/my_qr_code.png" alt="UPI QR Code" class="w-64 h-64 mx-auto bg-white p-4 rounded-2xl mb-6 shadow-lg">
+                <p class="text-gray-700 mb-2 font-medium">Or pay to UPI ID:</p>
+                <p id="upi-id-text" class="text-xl font-mono bg-gray-100 py-3 px-4 rounded-xl inline-block mb-8 text-gray-800">facesearchai@okhdfcbank</p>
+                <div id="payment-status-checker" class="payment-status-checker">
+                    <i class="fa-solid fa-spinner fa-spin text-blue-600 mr-3"></i>
+                    <span>Waiting for payment confirmation...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5: Final Download -->
+        <div id="screen-download" class="screen hidden flex-grow flex flex-col items-center justify-center text-center">
+            <div class="glass-card w-full max-w-2xl p-10">
+                <i class="fa-solid fa-circle-check text-7xl text-green-500 mb-6"></i>
+                <h2 class="text-4xl font-bold text-gray-700 mb-4">Payment Confirmed!</h2>
+                <p class="text-gray-600 text-lg mb-8">
+                    Your photos are ready. Choose an option below to get your memories.
+                </p>
+                
+                <!-- ======================================================= -->
+                <!-- THIS IS THE MODIFIED SECTION WITH THE NEW PRINT BUTTON  -->
+                <!-- ======================================================= -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <button id="final-download-btn" class="w-full primary-button text-xl py-4 flex-1">
+                        <i class="fa-solid fa-download mr-3"></i>Download All (.zip)
+                    </button>
+                    <!-- NEW: Print Button -->
+                    <button id="print-all-btn" class="w-full primary-button text-xl py-4 flex-1">
+                        <i class="fa-solid fa-print mr-3"></i>Print All Photos
+                    </button>
+                </div>
+                <!-- ======================= END MODIFIED SECTION ======================= -->
+
+                <!-- Email Form Section -->
+                <div class="border-t border-gray-200 pt-6 mt-2">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Or, get them delivered to your inbox:</h3>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="email-input" placeholder="Enter your email address" class="flex-grow w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                        <button id="send-email-btn" class="primary-button px-6 py-3">
+                            <i class="fa-solid fa-paper-plane mr-2"></i>Send Email
+                        </button>
+                    </div>
+                </div>
+
+                <button class="back-to-upload text-gray-500 hover:text-gray-700 transition-colors mt-8">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>Start a New Search
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[100] space-y-2"></div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

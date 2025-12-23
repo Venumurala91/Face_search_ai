@@ -9,6 +9,8 @@ venv/
 # VS Code settings
 .vscode/
 
+env/
+.env
 # Environment variables
 .env
 .env.*

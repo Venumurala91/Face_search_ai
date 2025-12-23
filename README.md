@@ -147,9 +147,24 @@ Since MySQL is not in the Docker setup, you must create the database for the app
     ```
 4.  Exit the MySQL shell: `exit;`
 
-**Important:** The Python code in `database.py` is configured to connect to MySQL with `username: root` and `password: Venu2425`. If your local MySQL root password is different, you **must** update the `DATABASE_URL` line in `database.py` accordingly.
+#### Step 4: Configure Environment Variables
 
-#### Step 4: Set Up the Python Backend
+1.  In the root directory, copy the example environment file:
+    ```bash
+    cp .env.example .env
+    # Or on Windows Command Prompt:
+    copy .env.example .env
+    ```
+2.  Open the `.env` file and update the database credentials to match your local MySQL setup:
+    ```ini
+    DB_USER=root
+    DB_PASSWORD=your_password_here
+    DB_HOST=localhost
+    DB_PORT=3306
+    DB_NAME=face_search_db
+    ```
+
+#### Step 5: Set Up the Python Backend
 
 1.  **Create a Virtual Environment:**
 
@@ -166,17 +181,10 @@ Since MySQL is not in the Docker setup, you must create the database for the app
 2.  **Install Python Dependencies:**
 
     ```bash
-    # Core dependencies
-    pip install fastapi "uvicorn[standard]" sqlalchemy mysql-connector-python python-dotenv passlib geopy
-    
-    # AI model dependencies
-    pip install numpy opencv-python onnx onnxruntime
-    
-    # Milvus and InsightFace
-    pip install insightface pymilvus
+    pip install -r requirements.txt
     ```
 
-#### Step 5: Create Project Directories
+#### Step 6: Create Project Directories
 
 The application expects certain folders to exist for storing images.
 

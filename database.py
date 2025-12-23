@@ -5,7 +5,10 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
 import os 
+from dotenv import load_dotenv
 from passlib.context import CryptContext
+
+load_dotenv()
 
 # DATABASE_URL = "mysql+mysqlconnector://root:Venu2425@localhost/face_search_db"
 DATABASE_URL = f"mysql+mysqlconnector://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"

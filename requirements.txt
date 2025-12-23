@@ -13,4 +13,8 @@ python-jose[cryptography]
 dbutils
 mysql-connector-python
 geopy==2.4.1
-pydantic[email] 
+pydantic[email]
+python-multipart
+sqlalchemy
+marshmallow<4.0.0
+bcrypt==3.2.2

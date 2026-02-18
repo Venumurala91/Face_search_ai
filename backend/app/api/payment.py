@@ -2,16 +2,14 @@
 
 import time
 import uuid
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel , EmailStr
 from sqlalchemy.orm import Session
 
-import database as db
-
-# --- CHANGE: Import the dependency from the new file ---
-from dependencies import get_current_guest
+from backend.app.core import database as db
+from .dependencies import get_current_guest
 
 # --- Pydantic model for this router ---
 class DownloadRequest(BaseModel):

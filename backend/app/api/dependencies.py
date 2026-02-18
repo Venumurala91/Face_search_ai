@@ -3,7 +3,7 @@
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
-import database as db
+from backend.app.core import database as db
 
 # ===================================================================
 # GUEST DEPENDENCIES

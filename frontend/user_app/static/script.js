@@ -1,15 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- UI Elements ---
     const API_BASE_URL = '';
-    const screens = { 
-        upload: document.getElementById('screen-upload'), 
-        loading: document.getElementById('screen-loading'), 
+    const screens = {
+        upload: document.getElementById('screen-upload'),
+        loading: document.getElementById('screen-loading'),
         results: document.getElementById('screen-results'),
         payment: document.getElementById('screen-payment'),
         download: document.getElementById('screen-download')
     };
-    
-    // UI Elements for Camera-Only flow
+
+    // UI Elements for Camera/Upload flow
     const previewContainer = document.getElementById('preview-container');
     const searchBtn = document.getElementById('search-btn');
     const uploadPreviewSection = document.getElementById('upload-preview-section');
@@ -22,6 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const guestLogoutBtn = document.getElementById('guest-logout-btn');
     const emailInput = document.getElementById('email-input');
     const sendEmailBtn = document.getElementById('send-email-btn');
+
+    // NEW UI Elements
+    const fileUploadInput = document.getElementById('file-upload');
+    const uploadBtnTrigger = document.getElementById('upload-btn-trigger');
+    const cameraSection = document.getElementById('camera-section');
+    const retakeBtn = document.getElementById('retake-btn');
 
     // NEW: Reference for the "Print All" button on the final screen
     const printAllBtn = document.getElementById('print-all-btn');
@@ -53,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.values(screens).forEach(s => s.classList.add('hidden'));
         screens[screenName]?.classList.remove('hidden');
     };
-    
+
     // --- Payment Polling ---
     const pollPaymentStatus = (transactionId) => {
         if (paymentPollInterval) clearInterval(paymentPollInterval);
@@ -79,29 +85,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 3000);
     };
-    
+
     const handleFile = (file) => {
-        if (!file || !file.type.startsWith('image/')) return showToast('Please capture a valid image.', 'error');
+        if (!file || !file.type.startsWith('image/')) return showToast('Please select a valid image.', 'error');
         currentFile = file;
         const reader = new FileReader();
         reader.onload = (e) => {
+            // Update preview
             previewContainer.innerHTML = `
-                <div class="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-cyan-400" title="${file.name}">
-                    <img src="${e.target.result}" class="w-full h-full object-cover">
-                    <button id="remove-preview-btn" class="absolute top-0 right-0 bg-red-600 hover:bg-red-700 text-white w-5 h-5 flex items-center justify-center text-xs rounded-bl-md" title="Retake photo">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>`;
-            
-            document.getElementById('remove-preview-btn').addEventListener('click', () => {
-                currentFile = null;
-                uploadPreviewSection.classList.add('hidden');
-                previewContainer.innerHTML = '';
-                startCamera();
-            });
+                <img src="${e.target.result}" class="w-full h-full object-cover">
+            `;
+
+            // Show preview section, hide camera/upload buttons
             uploadPreviewSection.classList.remove('hidden');
+            cameraSection.classList.add('hidden'); // Hide camera if it was open
+            startCameraBtn.parentElement.classList.add('hidden'); // Hide the choice buttons
+            stopCamera(); // Stop camera if needed
         };
         reader.readAsDataURL(file);
+    };
+
+    const resetUploadState = () => {
+        currentFile = null;
+        fileUploadInput.value = ''; // Reset input
+        previewContainer.innerHTML = '';
+        uploadPreviewSection.classList.add('hidden');
+        startCameraBtn.parentElement.classList.remove('hidden'); // Show choice buttons
+        cameraSection.classList.add('hidden');
+        startCameraBtn.innerHTML = '<i class="fa-solid fa-camera mr-2"></i>Use Camera';
+        stopCamera();
     };
 
     const populateCollections = async () => {
@@ -120,14 +132,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const performSearch = async () => {
         const selectedCollection = collectionDropdown.value;
-        if (!currentFile || !selectedCollection) return showToast('Please capture a photo and select a collection.', 'error');
+        if (!currentFile || !selectedCollection) return showToast('Please provide a photo and select a collection.', 'error');
         showScreen('loading');
         const formData = new FormData();
         formData.append('file', currentFile);
         try {
             const response = await fetch(`${API_BASE_URL}/api/search/${selectedCollection}`, { method: 'POST', body: formData });
             if (!response.ok) {
-                if(response.status === 401 || response.status === 307) window.location.href = '/';
+                if (response.status === 401 || response.status === 307) window.location.href = '/';
                 throw new Error((await response.json()).detail);
             }
             const data = await response.json();
@@ -136,13 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
             showScreen('results');
         } catch (error) {
             showToast(`Error: ${error.message}`, 'error');
-            showScreen('upload');
+            screens.loading.classList.add('hidden');
+            screens.upload.classList.remove('hidden');
+            // Maintain state
         }
     };
 
-    // =========================================================================
-    // MODIFIED: This function NO LONGER creates the individual print button
-    // =========================================================================
     const createResultsScreenHtml = (data) => {
         const hasResults = data.results && data.results.length > 0;
         let resultsContent;
@@ -172,10 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return `<div class="results-header"><button class="back-to-upload secondary-button"><i class="fa-solid fa-arrow-left mr-2"></i>New Search</button><div class="results-summary">${data.status}</div><button id="proceed-to-pay-btn" class="primary-button disabled:opacity-50" disabled><i class="fa-solid fa-credit-card mr-2"></i>Proceed to Pay <span class="selected-count font-normal ml-1"></span></button></div>${resultsContent}`;
     };
 
-    // ====================================================================
-    // MODIFIED: This function NO LONGER has a listener for an individual
-    // print button.
-    // ====================================================================
     const attachResultsScreenListeners = (results) => {
         selectedImages.clear();
         let currentIndex = 0;
@@ -232,9 +239,37 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGalleryView();
         updatePaymentButtonState();
     };
-    
-    const startCamera = async () => { try { stream = await navigator.mediaDevices.getUserMedia({ video: true }); webcamVideo.srcObject = stream; webcamVideo.play(); webcamVideo.classList.remove('hidden'); cameraPlaceholder.classList.add('hidden'); startCameraBtn.textContent = 'Restart Camera'; captureBtn.disabled = false; } catch (err) { showToast('Could not access webcam. Please allow camera permissions.', 'error'); } };
-    const stopCamera = () => { if (stream) { stream.getTracks().forEach(track => track.stop()); } stream = null; webcamVideo.classList.add('hidden'); cameraPlaceholder.classList.remove('hidden'); startCameraBtn.textContent = 'Start Camera'; captureBtn.disabled = true; };
+
+    // Camera Logic
+    const startCamera = async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            webcamVideo.srcObject = stream;
+            webcamVideo.play();
+            webcamVideo.classList.remove('hidden');
+            cameraPlaceholder.classList.add('hidden');
+            captureBtn.disabled = false;
+
+            // Show camera section
+            cameraSection.classList.remove('hidden');
+            cameraSection.classList.add('flex');
+
+            startCameraBtn.innerHTML = '<i class="fa-solid fa-video-slash mr-2"></i>Close Camera';
+            startCameraBtn.onclick = () => { stopCamera(); cameraSection.classList.add('hidden'); startCameraBtn.onclick = startCamera; startCameraBtn.innerHTML = '<i class="fa-solid fa-camera mr-2"></i>Use Camera'; };
+
+        } catch (err) {
+            showToast('Could not access webcam. Please allow camera permissions.', 'error');
+        }
+    };
+
+    const stopCamera = () => {
+        if (stream) { stream.getTracks().forEach(track => track.stop()); }
+        stream = null;
+        webcamVideo.classList.add('hidden');
+        cameraPlaceholder.classList.remove('hidden');
+        captureBtn.disabled = true;
+    };
+
     const capturePhoto = () => {
         if (!stream) return;
         const canvas = document.createElement('canvas');
@@ -243,11 +278,25 @@ document.addEventListener('DOMContentLoaded', () => {
         stopCamera();
         canvas.toBlob((blob) => { handleFile(new File([blob], "webcam.jpg", { type: "image/jpeg" })); }, 'image/jpeg');
     };
-    
+
     // --- Event Listeners ---
     searchBtn.addEventListener('click', performSearch);
-    startCameraBtn.addEventListener('click', () => { stream ? stopCamera() : startCamera(); });
+
+    // Toggle Camera
+    startCameraBtn.addEventListener('click', startCamera);
+
     captureBtn.addEventListener('click', capturePhoto);
+
+    // Upload Events
+    uploadBtnTrigger.addEventListener('click', () => fileUploadInput.click());
+    fileUploadInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    // Retake/Reset Event
+    retakeBtn?.addEventListener('click', resetUploadState);
 
     document.getElementById('final-download-btn')?.addEventListener('click', async () => {
         if (selectedImages.size === 0) return;
@@ -257,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image_paths: Array.from(selectedImages) })
             });
-            if(response.ok) {
+            if (response.ok) {
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -296,7 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // NEW: EVENT LISTENER FOR THE "PRINT ALL PHOTOS" BUTTON
     printAllBtn?.addEventListener('click', () => {
         if (selectedImages.size === 0) {
             return showToast('No photos were selected to print.', 'error');
@@ -310,14 +358,17 @@ document.addEventListener('DOMContentLoaded', () => {
             </style></head><body>`;
 
         selectedImages.forEach(imagePath => {
-            printHtmlContent += `<img src="${imagePath}">`;
+            // FIX: Convert file system path (backend/images/...) to web URL (/images/...) for the browser to load it
+            // ensuring we handle both Windows backslashes and forward slashes
+            const webPath = imagePath.replace(/\\/g, '/').replace(/^backend\/images\//, '/images/');
+            printHtmlContent += `<img src="${webPath}">`;
         });
         printHtmlContent += '</body></html>';
 
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.srcdoc = printHtmlContent;
-        iframe.onload = function() {
+        iframe.onload = function () {
             try {
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();
@@ -338,18 +389,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('click', (e) => {
         if (e.target.closest('.back-to-upload')) {
             e.preventDefault();
-            stopCamera();
-            currentFile = null;
-            selectedImages.clear();
-            uploadPreviewSection.classList.add('hidden');
-            previewContainer.innerHTML = '';
+            resetUploadState(); // Use reset instead of partial manual reset
             showScreen('upload');
-            startCamera();
         }
     });
 
     // --- Initial Load ---
     showScreen('upload');
     populateCollections();
-    startCamera();
+    // Don't auto-start camera anymore, user chooses.
 });

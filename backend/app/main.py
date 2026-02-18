@@ -21,19 +21,21 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 
 # --- Local Application Imports ---
-import database as db
-from dependencies import get_current_admin, get_current_guest, get_current_admin_api, get_current_guest_api
-from Face_search_logic_milvus import FaceSearchEngine, PREVIEW_IMAGE_DIR
-from payment import router as payment_router
-from payment import DownloadRequest,EmailRequest
-from email_utils import send_photos_email
+from .core import database as db
+from .api.dependencies import get_current_admin, get_current_guest, get_current_admin_api, get_current_guest_api
+from .services.face_search import FaceSearchEngine, PREVIEW_IMAGE_DIR
+from .api.payment import router as payment_router
+from .api.payment import DownloadRequest, EmailRequest
+from .services.email import send_photos_email
 
 # ===================================================================
 # 1. CORE APPLICATION SETUP
 # ===================================================================
 
 # --- Configuration & App Initialization ---
-BASE_IMAGE_DIRECTORY = "images"
+# Images are now in backend/images relative to project root, OR relative to this file?
+# If running from root, paths should be 'backend/images'.
+BASE_IMAGE_DIRECTORY = os.getenv("BASE_IMAGE_DIRECTORY", "backend/images") # Updated path
 app = FastAPI(title="FaceSearch AI System", version="4.8.0",
               description="An AI-powered system for theme parks to manage and sell guest photos using face recognition.")
 
@@ -92,8 +94,19 @@ def startup_event():
     """Initializes database tables and connects to Milvus on startup."""
     db.create_db_and_tables()
     os.makedirs(BASE_IMAGE_DIRECTORY, exist_ok=True)
-    os.makedirs(PREVIEW_IMAGE_DIR, exist_ok=True)
-    os.makedirs("selected_images", exist_ok=True)
+    # Update PREVIEW_IMAGE_DIR path if needed, it's imported.
+    # We should ensure the imported PREVIEW_IMAGE_DIR is correct or handled there.
+    # For now, we assume os.makedirs works with the path defined in face_search.py
+    # But we need to make sure consistency.
+    # Let's override or use the imported one.
+    # If face_search.py defines it as 'images_preview', and we run from root, and dir is 'backend/images_preview', we have a problem.
+    # We will fix face_search.py later.
+    
+    # We need to create the dirs if they don't exist.
+    # Assuming face_search.py will be updated to 'backend/images_preview'
+    os.makedirs("backend/images_preview", exist_ok=True) # Manual fix here for safety
+    os.makedirs("backend/selected_images", exist_ok=True)
+    
     with db.SessionLocal() as session:
         if not session.query(db.Admin).first():
             default_admin = db.Admin(username="admin", hashed_password=db.get_password_hash("admin123"))
@@ -109,10 +122,11 @@ def shutdown_event():
     utility.connections.disconnect("default")
 
 # --- Static File and Asset Mounting ---
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
-app.mount("/admin_static", StaticFiles(directory="admin_frontend/static"), name="admin_static")
+app.mount("/static", StaticFiles(directory="frontend/user_app/static"), name="static")
+app.mount("/admin_static", StaticFiles(directory="frontend/admin_app/static"), name="admin_static")
 app.mount("/images", StaticFiles(directory=BASE_IMAGE_DIRECTORY), name="images")
-app.mount("/images_preview", StaticFiles(directory=PREVIEW_IMAGE_DIR), name="images_preview")
+# We need to make sure PREVIEW_IMAGE_DIR matches
+app.mount("/images_preview", StaticFiles(directory="backend/images_preview"), name="images_preview")
 
 # --- Pydantic API Models ---
 class UpdateRequest(BaseModel):
@@ -138,26 +152,26 @@ app.include_router(payment_router)
 @app.get("/", response_class=HTMLResponse, tags=["Pages"])
 async def serve_guest_login_page():
     """Serves the main login page for guests."""
-    with open("frontend/login_index.html") as f:
+    with open("frontend/user_app/login_index.html") as f:
         return HTMLResponse(content=f.read())
 
 @app.get("/app", response_class=HTMLResponse, tags=["Pages"])
 async def serve_main_app(guest: db.Guest = Depends(get_current_guest)):
     """Serves the main application page after a guest is authenticated."""
-    with open("frontend/index.html") as f:
+    with open("frontend/user_app/index.html") as f:
         return HTMLResponse(content=f.read())
 
 # --- Admin Pages ---
 @app.get("/admin/login", response_class=HTMLResponse, tags=["Pages"])
 async def serve_admin_login_page():
     """Serves the login page for administrators."""
-    with open("admin_frontend/login_index.html") as f:
+    with open("frontend/admin_app/login_index.html") as f:
         return HTMLResponse(content=f.read())
 
 @app.get("/admin", response_class=HTMLResponse, tags=["Pages"])
 async def serve_admin_dashboard(admin: db.Admin = Depends(get_current_admin)):
     """Serves the main admin dashboard page after an admin is authenticated."""
-    with open("admin_frontend/admin_index.html") as f:
+    with open("frontend/admin_app/admin_index.html") as f:
         return HTMLResponse(content=f.read())
 
 
@@ -230,8 +244,8 @@ async def api_search_face(collection_name: str, file: UploadFile = File(...), gu
             original_path = result["image_path"]
             preview_filename = os.path.basename(original_path)
             
-            # --- KEY CHANGE: The web path now includes the collection_name subfolder
-            web_path = f"/{PREVIEW_IMAGE_DIR}/{collection_name}/{preview_filename}".replace('\\', '/')
+            # --- KEY CHANGE: The web path should point to the MOUNTED path, not the physical one
+            web_path = f"/images_preview/{collection_name}/{preview_filename}".replace('\\', '/')
             
             # Check if the file exists on disk using its full, correct path
             preview_path_on_disk = os.path.join(PREVIEW_IMAGE_DIR, collection_name, preview_filename)
@@ -329,6 +343,57 @@ async def api_update_collection(collection_name: str, request: UpdateRequest, db
         log.upload_datetime = datetime.datetime.now(datetime.UTC)
         log.location = location_name; log.latitude = request.latitude; log.longitude = request.longitude
     db_session.commit()
+    return JSONResponse(content=add_status)
+
+@app.post("/api/admin/create-collection-with-upload", tags=["Admin APIs"])
+async def api_create_collection_with_upload(
+    collection_name: str = Form(...),
+    latitude: float = Form(...),
+    longitude: float = Form(...),
+    files: List[UploadFile] = File(...),
+    db_session: Session = Depends(db.get_db),
+    admin: db.Admin = Depends(get_current_admin_api)
+):
+    """Creates a collection and indexes uploaded images."""
+    if not collection_name or not files:
+        raise HTTPException(status_code=400, detail="Collection name and files are required.")
+
+    # 1. Create directory
+    safe_name = collection_name.strip().replace(" ", "_").lower()
+    target_dir = os.path.join(BASE_IMAGE_DIRECTORY, safe_name)
+    os.makedirs(target_dir, exist_ok=True)
+
+    # 2. Save files
+    saved_count = 0
+    for file in files:
+        try:
+            file_path = os.path.join(target_dir, file.filename)
+            with open(file_path, "wb") as buffer:
+                content = await file.read()
+                buffer.write(content)
+            saved_count += 1
+        except Exception as e:
+            print(f"Error saving uploaded file {file.filename}: {e}")
+
+    if saved_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to save any uploaded files.")
+
+    # 3. Index images
+    engine = FaceSearchEngine(collection_name=collection_name)
+    add_status = engine.add_images_from_directory(target_dir)
+
+    # 4. Create/Update Log
+    location_name = get_address_from_coords(latitude, longitude)
+    log = db_session.query(db.CollectionLog).filter_by(collection_name=collection_name).first()
+    if not log:
+        log = db.CollectionLog(collection_name=collection_name, source_folder=target_dir, location=location_name, latitude=latitude, longitude=longitude)
+        db_session.add(log)
+    else:
+        log.upload_datetime = datetime.datetime.now(datetime.UTC)
+        log.location = location_name; log.latitude = latitude; log.longitude = longitude
+        log.source_folder = target_dir
+    db_session.commit()
+
     return JSONResponse(content=add_status)
 
 @app.post("/api/admin/sync-collection/{collection_name}", tags=["Admin APIs"])

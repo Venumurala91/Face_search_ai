@@ -208,7 +208,7 @@ Docker will also automatically create a `./volumes` directory to store the Milvu
 3.  Run the FastAPI server using Uvicorn:
 
     ```bash
-    uvicorn main_milvus:app --host 0.0.0.0 --port 8000 --reload
+    uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
     ```
 
 4.  The server is now live.

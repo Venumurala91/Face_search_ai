@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const showEmpty = (tbody, message) => {
         tbody.innerHTML = `<tr><td colspan="10" class="text-center text-slate-500 py-12">${message}</td></tr>`;
     };
-    
+
     // --- Map & Geocoding Functions ---
     async function updateReverseGeocodedAddress(lat, lon) {
         geocodedAddressEl.textContent = 'Fetching address...';
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
             geocodedAddressEl.textContent = 'Could not fetch address.';
         }
     }
-    
+
     function initializeMap() {
         if (map) {
             map.invalidateSize();
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return `<tr><td>${checkbox}</td><td class="font-mono">${admin.id}</td><td class="font-semibold text-gray-900">${admin.username}</td><td class="text-center">${deleteBtn}</td></tr>`;
         }).join('');
     }
-    
+
     // --- Navigation & Event Listeners ---
     // (This entire section remains unchanged)
     navLinks.forEach(link => {
@@ -177,6 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
         collectionSourceDropdown.value = '';
         collectionSourceDropdown.innerHTML = '<option value="">-- Loading available folders... --</option>';
         createCollectionModal.classList.remove('hidden');
+
+        // Reset file inputs
+        document.getElementById('upload-files-input').value = '';
+        document.getElementById('upload-folder-input').value = '';
+        document.getElementById('selected-files-count').classList.add('hidden');
+        collectionSourceDropdown.disabled = false;
+        collectionSourceDropdown.classList.remove('opacity-50', 'cursor-not-allowed');
+
         setTimeout(initializeMap, 10);
         try {
             const response = await fetch('/api/admin/available-folders');
@@ -187,11 +195,75 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { data.folders.forEach(folder => { collectionSourceDropdown.innerHTML += `<option value="${folder}">${folder}</option>`; }); }
         } catch (error) { collectionSourceDropdown.innerHTML = '<option value="">Error loading folders</option>'; }
     });
-    
+
+    // --- File Input Handling ---
+    const fileInput = document.getElementById('upload-files-input');
+    const folderInput = document.getElementById('upload-folder-input');
+    const fileCountDisplay = document.getElementById('selected-files-count');
+    const fileCountSpan = fileCountDisplay.querySelector('span');
+
+    // Helper to update file count
+    const updateFileCount = () => {
+        const totalFiles = (fileInput.files.length || 0) + (folderInput.files.length || 0);
+        if (totalFiles > 0) {
+            fileCountSpan.textContent = totalFiles;
+            fileCountDisplay.classList.remove('hidden');
+            collectionSourceDropdown.disabled = true; // Disable dropdown if files selected
+            collectionSourceDropdown.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            fileCountDisplay.classList.add('hidden');
+            collectionSourceDropdown.disabled = false;
+            collectionSourceDropdown.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    };
+
+    fileInput.addEventListener('change', updateFileCount);
+    folderInput.addEventListener('change', updateFileCount);
+
     document.getElementById('update-modal-start-btn').addEventListener('click', async () => {
         const collectionName = collectionNameInput.value.trim().replace(/-/g, '_').replace(/\s+/g, '_').toLowerCase();
         const selectedFolder = collectionSourceDropdown.value;
-        if (!collectionName || !selectedFolder) { return alert('Please provide a collection name and select a source folder.'); }
+        const totalFiles = (fileInput.files.length || 0) + (folderInput.files.length || 0);
+
+        if (!collectionName) return alert('Please provide a collection name.');
+
+        // Mode 1: File Upload
+        if (totalFiles > 0) {
+            const btn = document.getElementById('update-modal-start-btn');
+            btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Uploading ${totalFiles} images...`;
+
+            const formData = new FormData();
+            formData.append('collection_name', collectionName);
+            formData.append('latitude', currentLatitude);
+            formData.append('longitude', currentLongitude);
+
+            // Append files from both inputs
+            if (fileInput.files) { Array.from(fileInput.files).forEach(file => formData.append('files', file)); }
+            if (folderInput.files) { Array.from(folderInput.files).forEach(file => formData.append('files', file)); }
+
+            try {
+                const response = await fetch('/api/admin/create-collection-with-upload', {
+                    method: 'POST',
+                    body: formData // No Content-Type header, browser sets it for FormData
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Failed to upload and index.');
+                alert(`Success! Added ${data.faces_added} faces from ${data.images_added} images.`);
+                createCollectionModal.classList.add('hidden');
+                fetchCollectionsData();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                btn.disabled = false; btn.innerHTML = 'Start Indexing';
+                // Reset inputs
+                fileInput.value = ''; folderInput.value = ''; updateFileCount();
+            }
+            return;
+        }
+
+        // Mode 2: Server Folder
+        if (!selectedFolder) { return alert('Please select a source folder OR upload images.'); }
+
         const sourceDir = `images/${selectedFolder}`;
         const btn = document.getElementById('update-modal-start-btn');
         btn.disabled = true; btn.innerHTML = 'Processing...';
@@ -210,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`Error: ${error.message}`);
         } finally { btn.disabled = false; btn.innerHTML = 'Start Indexing'; }
     });
-    
+
     document.getElementById('admin-modal-create-btn').addEventListener('click', async () => {
         const username = document.getElementById('new-admin-username').value.trim();
         const password = document.getElementById('new-admin-password').value.trim();
@@ -263,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const collectionName = syncBtn.dataset.name;
             const actualSourceFolder = syncBtn.dataset.sourceFolder;
             const sourceDir = prompt(`Confirm source directory for syncing "${collectionName}":`, actualSourceFolder);
-            
+
             if (!sourceDir) return alert('Sync cancelled.');
 
             syncBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
@@ -283,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    
+
     document.body.addEventListener('change', e => {
         if (e.target.matches('.check-all')) {
             const table = e.target.dataset.table;
@@ -292,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (e.target.matches('.check-item')) { handleSelectionChange(e.target.dataset.table); }
     });
-    
+
     document.getElementById('delete-selected-collections').addEventListener('click', async () => {
         const names = Array.from(document.querySelectorAll('.check-item[data-table="collections"]:checked')).map(cb => cb.dataset.name);
         if (names.length > 0 && confirm(`Are you sure you want to delete ${names.length} collection(s)?`)) {
@@ -330,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
             () => geocodedAddressEl.textContent = "Unable to retrieve your location."
         );
     });
-    
+
     document.getElementById('open-admin-modal-btn').addEventListener('click', () => createAdminModal.classList.remove('hidden'));
     document.querySelectorAll('.cancel-btn').forEach(btn => btn.addEventListener('click', () => {
         createCollectionModal.classList.add('hidden'); createAdminModal.classList.add('hidden');

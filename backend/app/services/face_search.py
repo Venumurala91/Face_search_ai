@@ -21,7 +21,7 @@ DISTANCE_THRESHOLD = float(os.getenv("DISTANCE_THRESHOLD", 1.0))
 NPROBE = int(os.getenv("NPROBE", 20))
 
 # --- PREVIEW IMAGE CONFIGURATION ---
-PREVIEW_IMAGE_DIR = "images_preview"
+PREVIEW_IMAGE_DIR = os.getenv("PREVIEW_IMAGE_DIR", "backend/images_preview")
 WATERMARK_TEXT = "Your Park Memories"
 
 

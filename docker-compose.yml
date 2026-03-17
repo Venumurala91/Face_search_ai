@@ -1,7 +1,46 @@
-# docker-compose.yml
-# Note: The 'version' tag is removed as it's obsolete.
+version: '3.8'
 
 services:
+  app:
+    build: .
+    container_name: face_search_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=face_search_db
+      - MILVUS_HOST=milvus-standalone
+      - MILVUS_PORT=19530
+      - BASE_IMAGE_DIRECTORY=backend/images
+    volumes:
+      - ./backend/images:/app/backend/images
+      - ./backend/images_preview:/app/backend/images_preview
+      - ./backend/selected_images:/app/backend/selected_images
+      - ./volumes/insightface_models:/root/.insightface/models
+    depends_on:
+      - mysql
+      - standalone
+    networks:
+      - milvus
+
+  mysql:
+    image: mysql:8.0
+    container_name: face_search_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: face_search_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - milvus
+
   etcd:
     container_name: milvus-etcd
     image: quay.io/coreos/etcd:v3.5.5
@@ -13,6 +52,8 @@ services:
     volumes:
       - ./volumes/etcd:/etcd
     command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - milvus
 
   minio:
     container_name: milvus-minio
@@ -28,6 +69,8 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    networks:
+      - milvus
 
   standalone:
     container_name: milvus-standalone
@@ -42,9 +85,14 @@ services:
       - "19530:19530"
       - "9091:9091"
     depends_on:
-      - "etcd"
-      - "minio"
+      - etcd
+      - minio
+    networks:
+      - milvus
 
 networks:
-  default:
+  milvus:
     name: milvus
+
+volumes:
+  mysql_data:

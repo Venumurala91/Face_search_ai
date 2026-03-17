@@ -158,6 +158,7 @@ class FaceSearchEngine:
         all_hits = []
         for hits_for_one_face in list_of_results:
             for hit in hits_for_one_face:
+                print(f"DEBUG: Hit path={hit.entity.get('image_path')}, distance={hit.distance}")
                 if hit.distance < DISTANCE_THRESHOLD:
                     all_hits.append({"image_path": hit.entity.get("image_path"), "distance": hit.distance})
         if not all_hits: return {"status": f"Detected {len(faces)} face(s), but no confident matches found.", "results": []}
@@ -181,8 +182,12 @@ class FaceSearchEngine:
             res = self.collection.query(expr="", output_fields=["image_path"], limit=16384)
             processed_paths = {os.path.normpath(item['image_path']).lower() for item in res}
             
-            # Get a list of all valid image files currently on the disk
-            all_disk_images = [os.path.normpath(os.path.join(image_directory, f)) for f in os.listdir(image_directory) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            # Get a list of all valid image files currently on the disk (recursive)
+            all_disk_images = []
+            for root, _, files in os.walk(image_directory):
+                for f in files:
+                    if f.lower().endswith(('.png', '.jpg', '.jpeg')):
+                        all_disk_images.append(os.path.normpath(os.path.join(root, f)))
             
             # Determine which images are new and need to be processed
             new_images = [p for p in all_disk_images if p.lower() not in processed_paths]

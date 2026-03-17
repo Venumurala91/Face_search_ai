@@ -36,6 +36,7 @@ from .services.email import send_photos_email
 # Images are now in backend/images relative to project root, OR relative to this file?
 # If running from root, paths should be 'backend/images'.
 BASE_IMAGE_DIRECTORY = os.getenv("BASE_IMAGE_DIRECTORY", "backend/images") # Updated path
+print(f"--- DEBUG: BASE_IMAGE_DIRECTORY is set to: {BASE_IMAGE_DIRECTORY}")
 app = FastAPI(title="FaceSearch AI System", version="4.8.0",
               description="An AI-powered system for theme parks to manage and sell guest photos using face recognition.")
 
@@ -294,7 +295,12 @@ async def api_get_collections_data(db_session: Session = Depends(db.get_db), adm
         log_entry = log_map.get(name)
         total_images = 0
         if log_entry and log_entry.source_folder and os.path.isdir(log_entry.source_folder):
-            total_images = len([f for f in os.listdir(log_entry.source_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+            count = 0
+            for root, _, files in os.walk(log_entry.source_folder):
+                for f in files:
+                    if f.lower().endswith(('.png', '.jpg', '.jpeg')):
+                        count += 1
+            total_images = count
         collections_data.append({
             "name": name,
             "upload_datetime": log_entry.upload_datetime.strftime("%Y-%m-%d %H:%M") if log_entry else "N/A",
@@ -331,13 +337,22 @@ async def api_get_available_folders(admin: db.Admin = Depends(get_current_admin_
 async def api_update_collection(collection_name: str, request: UpdateRequest, db_session: Session = Depends(db.get_db), admin: db.Admin = Depends(get_current_admin_api)):
     """Creates a new collection or updates an existing one with new images."""
     engine = FaceSearchEngine(collection_name=collection_name)
-    add_status = engine.add_images_from_directory(request.source_directory)
+    
+    # FIX: Handle path mismatch. If frontend sends 'images/foo', map to BASE_IMAGE_DIRECTORY/foo
+    source_dir = request.source_directory
+    if source_dir.startswith("images/") or source_dir.startswith("images\\"):
+        folder_name = os.path.basename(source_dir)
+        source_dir = os.path.join(BASE_IMAGE_DIRECTORY, folder_name)
+    
+    print(f"DEBUG: update-collection using source_dir: {source_dir}")
+    
+    add_status = engine.add_images_from_directory(source_dir)
     if add_status.get("status") == "error":
         raise HTTPException(status_code=404, detail=add_status["message"])
     location_name = get_address_from_coords(request.latitude, request.longitude)
     log = db_session.query(db.CollectionLog).filter_by(collection_name=collection_name).first()
     if not log:
-        log = db.CollectionLog(collection_name=collection_name, source_folder=request.source_directory, location=location_name, latitude=request.latitude, longitude=request.longitude)
+        log = db.CollectionLog(collection_name=collection_name, source_folder=source_dir, location=location_name, latitude=request.latitude, longitude=request.longitude)
         db_session.add(log)
     else:
         log.upload_datetime = datetime.datetime.now(datetime.UTC)
@@ -367,7 +382,18 @@ async def api_create_collection_with_upload(
     saved_count = 0
     for file in files:
         try:
-            file_path = os.path.join(target_dir, file.filename)
+            # Normalize filename to handle Windows paths if sent by browser
+            normalized_filename = file.filename.replace("\\", "/")
+            # Remove leading slashes to prevent absolute path traversal
+            normalized_filename = normalized_filename.lstrip("/")
+            
+            file_path = os.path.join(target_dir, normalized_filename)
+            
+            print(f"DEBUG: Processing upload. Original='{file.filename}', Normalized='{normalized_filename}', Target='{file_path}'")
+            
+            # Ensure the directory exists if the filename contains a path (e.g. upload folder)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
             with open(file_path, "wb") as buffer:
                 content = await file.read()
                 buffer.write(content)

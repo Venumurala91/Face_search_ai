@@ -19,3 +19,5 @@ python-multipart
 sqlalchemy
 marshmallow<4.0.0
 bcrypt==3.2.2
+pytest
+pytest-playwright
